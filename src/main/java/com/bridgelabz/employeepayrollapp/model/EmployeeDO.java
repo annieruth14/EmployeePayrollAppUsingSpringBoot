@@ -2,18 +2,27 @@ package com.bridgelabz.employeepayrollapp.model;
 
 import java.util.Date;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EmployeeDO {
 	
+	@NotEmpty(message = "Name cannot be empty")
 	private String name;
 	private String imagePath;
 	private String gender;
+	
+	@Min(value = 100, message = "Salary digit should be greater than 1")
+	@Max(value = 10000000, message = "Salary digit should be less than 10")
 	private int salary;
-	private String startDate;
+	private Date startDate;
 	private String department;
 	private String notes;
 	

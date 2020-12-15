@@ -20,9 +20,4 @@ public class GlobalExceptionHandler {
 		}
 		return new ResponseEntity<Error>(new Error(ex.getMessage(),500),HttpStatus.INTERNAL_SERVER_ERROR);
 	}
-	
-	@ExceptionHandler
-	public ResponseEntity<Error> handle(Exception ex) {
-		return new ResponseEntity<Error>(new Error(ex.getMessage(), 500), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
 }

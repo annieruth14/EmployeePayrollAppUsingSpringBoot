@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +24,15 @@ public class EmployeePayrollServiceImpl implements IEmployeePayrollService{
 	@Autowired
 	private EmployeeRepository employeeRepository; 
 	
+	@Autowired
+	private ModelMapper modelMapper;
+	
 	@Override
 	public ResponseDO addEmployee(EmployeeDO empDo) {
 		if (empDo == null) {
 			throw new BadRequestException("Name is not Proper");
 		}
-		EmployeeEntity empEntity = new EmployeeEntity();
-		empEntity = this.convertEntity(empEntity, empDo);
+		EmployeeEntity empEntity = modelMapper.map(empDo, EmployeeEntity.class);
 		empEntity = employeeRepository.save(empEntity);
 		if(empEntity != null) {
 			return new ResponseDO("successfully inserted !!!!");
@@ -39,16 +42,12 @@ public class EmployeePayrollServiceImpl implements IEmployeePayrollService{
 	}
 	
 	@Override
-	public List<EmployeeDO> getEmployeeList() {
-		List<EmployeeEntity> listOfEmployees = new ArrayList<>();
-		listOfEmployees = employeeRepository.findAll();
+	public List<EmployeeEntity> getEmployeeList() {
+		List<EmployeeEntity> listOfEmployees = employeeRepository.findAll();
 		if (listOfEmployees == null || listOfEmployees.isEmpty()) {
 			throw new NotFoundException("No Data Found of any employee");
 		}
-		return listOfEmployees.stream().map(employee -> {
-			EmployeeDO employeeDo = convertObj(employee);
-			return employeeDo;
-		}).collect(Collectors.toList());
+		return listOfEmployees;
 	}
 
 	@Override
@@ -63,39 +62,18 @@ public class EmployeePayrollServiceImpl implements IEmployeePayrollService{
 		if(employee == null) {
 			throw new NotFoundException("No Data Found for the id:" + id);
 		}
-		EmployeeDO employeeDo = convertObj(employee);
+		EmployeeDO employeeDo = modelMapper.map(employee, EmployeeDO.class);
 		return employeeDo;
 	}
 
 	@Override
 	public EmployeeDO updateEmployeeData(int empId, EmployeeDO empDo) {
 		EmployeeEntity employee = employeeRepository.findById(empId);
-		employee = this.convertEntity(employee, empDo);
+		if(employee == null) {
+			throw new NotFoundException("No Data Found for the id:" + empId);
+		}
+		modelMapper.map(empDo, employee);
 		EmployeeEntity updatedEmployee = employeeRepository.save(employee);
-		return convertObj(updatedEmployee);
+		return modelMapper.map(updatedEmployee, EmployeeDO.class);
 	} 
-	
-	private EmployeeDO convertObj(EmployeeEntity employee) {
-		EmployeeDO employeeDo = new EmployeeDO();
-		employeeDo.setName(employee.getName());
-		employeeDo.setGender(employee.getGender());
-		employeeDo.setImagePath(employee.getImagePath());
-		employeeDo.setDepartment(employee.getDepartment());
-		employeeDo.setSalary(employee.getSalary());
-		employeeDo.setNotes(employee.getNotes());
-		employeeDo.setStartDate("");
-		return employeeDo;
-	}
-	
-	private EmployeeEntity convertEntity(EmployeeEntity empEntity, EmployeeDO empDo) {
-		empEntity.setName(empDo.getName());
-		empEntity.setDepartment(empDo.getDepartment());
-		empEntity.setGender(empDo.getGender());
-		empEntity.setImagePath(empDo.getImagePath());
-		empEntity.setSalary(empDo.getSalary());
-		empEntity.setNotes(empDo.getNotes());
-		empEntity.setStartDate(new Date());
-		return empEntity;
-	}
-
 }
